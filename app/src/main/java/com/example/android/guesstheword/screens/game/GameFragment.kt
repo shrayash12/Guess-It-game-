@@ -49,39 +49,39 @@ class GameFragment : Fragment() {
                 false
         )
 
-        viewModel.score.observe(viewLifecycleOwner, Observer { newScore ->
-            binding.scoreText.text = newScore.toString()
-        })
+        viewModel = ViewModelProvider(this).get(GameViewModel::class.java)
 
-        Log.i("GameFragment", "GameViewModel Called")
+
+        // Get the viewmodel
         viewModel = ViewModelProvider(this).get(GameViewModel::class.java)
 
         binding.correctButton.setOnClickListener {
             viewModel.onCorrect()
-            updateScoreText()
-            updateWordText()
         }
         binding.skipButton.setOnClickListener {
             viewModel.onSkip()
-            updateScoreText()
-            updateWordText()
         }
-        updateScoreText()
-        updateWordText()
+
+        /** Setting up LiveData observation relationship **/
+        viewModel.word.observe(requireActivity(), Observer { newWord ->
+            binding.wordText.text = newWord
+        })
+
+        viewModel.score.observe(requireActivity(), Observer { newScore ->
+            binding.scoreText.text = newScore.toString()
+        })
         return binding.root
 
     }
 
-    private fun gameFinished() {
-
-        val action = GameFragmentDirections.actionGameToScore(viewModel.score)
-        findNavController(this).navigate(action)
+    fun gameFinished() {
+        // the LiveData is null
         val currentScore = viewModel.score.value ?: 0
-
+        val action = GameFragmentDirections.actionGameToScore(currentScore)
+        findNavController(this).navigate(action)
     }
-
     private fun updateWordText() {
-        binding.wordText.text = viewModel.word
+        binding.wordText.text = viewModel.word.value
 
     }
 
